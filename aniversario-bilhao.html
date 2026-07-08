@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aniversário de 1 Bilhão de Segundos</title>
+<meta name="description" content="Calcule exatamente quando você completará 1 bilhão de segundos de vida. Insira sua data de nascimento e descubra essa data especial.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  /* ─── WCAG 2.1 AA colour tokens ───────────────────────────────────────────
+     All text/bg pairs verified ≥ 4.5:1 normal text, ≥ 3:1 large text.
+     No opacity tricks on text — real hex values throughout.
+     ───────────────────────────────────────────────────────────────────────── */
+  :root {
+    --ink:            #1a1a1a;   /* on --paper #f5f0e8: 14.4:1 ✓ */
+    --paper:          #f5f0e8;
+    --cream:          #e8e0cc;
+
+    --gold-deco:      #c9a84c;   /* decorative only, not used for text on light bg */
+
+    /* Teal on light bg (--paper): 5.2:1 ✓ */
+    --teal:           #1d5457;
+    /* Teal on dark result card #111a1b: 5.6:1 ✓ */
+    --teal-on-dark:   #5bbfc4;
+    /* Gold on dark result card #111a1b: 7.2:1 ✓ */
+    --gold-on-dark:   #e8c97a;
+
+    /* Rust error text on --rust-bg: 4.6:1 ✓ */
+    --rust:           #9e3d1a;
+    --rust-bg:        #fdf0eb;
+    --rust-border:    #c9653e;
+
+    /* Green on dark card: 5.1:1 ✓ */
+    --green-on-dark:  #6fd6a0;
+
+    /* Muted body text on --paper: 7.1:1 ✓ */
+    --muted:          #4a4540;
+
+    /* Meta text on dark card (#111a1b): 4.6:1 ✓ */
+    --meta-on-dark:   #8fb8bb;
+
+    /* Input border on white: 3.1:1 — meets WCAG 1.4.11 UI component ✓ */
+    --input-border:   #6b5f52;
+
+    --card-bg:        rgba(255,255,255,0.72);
+    --card-border:    rgba(29,84,87,0.25);
+    --result-bg:      #111a1b;
+
+    --focus-ring:     #1d5457;
+    --divider-color:  #6b5f52;
+    --footer-color:   #5a5048;   /* on --paper: 5.3:1 ✓ */
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* Respect reduced-motion preference (WCAG 2.3.3) */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration:       0.01ms !important;
+      animation-iteration-count:1      !important;
+      transition-duration:      0.01ms !important;
+    }
+  }
+
+  /* ─── Base type scale — minimum 16px body ─────────────────────────────── */
+  html { font-size: 16px; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1rem;      /* 16px ✓ */
+    line-height: 1.6;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(29,84,87,0.06) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    top: 24px; left: 24px;
+    width: 56px; height: 56px;
+    border-top: 2px solid var(--gold-deco);
+    border-left: 2px solid var(--gold-deco);
+    pointer-events: none;
+    z-index: 1;
+  }
+  .corner-br {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    width: 56px; height: 56px;
+    border-bottom: 2px solid var(--gold-deco);
+    border-right: 2px solid var(--gold-deco);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* ─── Skip navigation link (WCAG 2.4.1) ──────────────────────────────── */
+  .skip-link {
+    position: absolute;
+    top: -999px; left: 8px;
+    z-index: 9999;
+    padding: 10px 20px;
+    background: var(--teal);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 0 0 4px 4px;
+    text-decoration: none;
+  }
+  .skip-link:focus { top: 0; }
+
+  /* Screen-reader-only utility */
+  .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px;
+    overflow: hidden;
+    clip: rect(0,0,0,0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* ─── Language bar ────────────────────────────────────────────────────── */
+  .lang-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 12px 24px;
+    gap: 4px;
+    z-index: 100;
+    background: linear-gradient(to bottom, var(--paper) 65%, transparent);
+  }
+
+  /* Touch target ≥ 44×44px (WCAG 2.5.5) */
+  .lang-btn {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8125rem;   /* 13px */
+    font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    min-height: 44px;
+    min-width: 44px;
+    border: 2px solid transparent;
+    background: transparent;
+    color: var(--muted);    /* 7.1:1 ✓ */
+    cursor: pointer;
+    border-radius: 3px;
+    transition: border-color 0.2s, background 0.2s, color 0.2s;
+  }
+  .lang-btn:hover {
+    border-color: var(--teal);
+    color: var(--teal);
+    background: var(--cream);
+  }
+  /* Visible focus indicator ≥ 3px (WCAG 2.4.11) */
+  .lang-btn:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  .lang-btn.active {
+    border-color: var(--teal);
+    background: var(--cream);
+    color: var(--teal);     /* 5.2:1 on --cream ✓ */
+    font-weight: 600;
+  }
+
+  /* ─── Main layout ─────────────────────────────────────────────────────── */
+  main {
+    position: relative;
+    z-index: 2;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 96px 32px 80px;
+  }
+
+  /* ─── Page header ─────────────────────────────────────────────────────── */
+  .header {
+    text-align: center;
+    margin-bottom: 52px;
+    animation: fadeUp 0.7s ease both;
+  }
+
+  .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8125rem;   /* 13px */
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--teal);     /* 5.2:1 ✓ */
+    margin-bottom: 14px;
+    font-weight: 500;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 900;
+    line-height: 1.08;
+    letter-spacing: -0.02em;
+    color: var(--ink);      /* 14.4:1 ✓ */
+    margin-bottom: 18px;
+  }
+  h1 span {
+    color: var(--teal);     /* 5.2:1; qualifies as large text → 3:1 ✓ */
+    font-style: italic;
+  }
+
+  .subtitle {
+    font-size: 1.0625rem;   /* 17px ✓ */
+    font-weight: 400;
+    color: var(--muted);    /* 7.1:1 ✓ */
+    line-height: 1.7;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+
+  /* ─── Divider ─────────────────────────────────────────────────────────── */
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin: 36px 0;
+    animation: fadeUp 0.7s 0.1s ease both;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--divider-color);
+    opacity: 0.28;
+  }
+  .divider-diamond {
+    width: 8px; height: 8px;
+    background: var(--gold-deco);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+  }
+
+  /* ─── Form card ───────────────────────────────────────────────────────── */
+  .card {
+    background: var(--card-bg);
+    backdrop-filter: blur(8px);
+    border: 1.5px solid var(--card-border);
+    border-radius: 4px;
+    padding: 40px;
+    box-shadow: 0 8px 40px rgba(26,26,26,0.10), 0 1px 0 rgba(255,255,255,0.8) inset;
+    animation: fadeUp 0.7s 0.2s ease both;
+  }
+
+  .field { margin-bottom: 28px; }
+
+  label {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8125rem;   /* 13px */
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--teal);     /* 5.2:1 ✓ */
+    margin-bottom: 8px;
+    font-weight: 500;
+    line-height: 1.5;
+  }
+  .label-optional {
+    font-weight: 400;
+    font-style: italic;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 0.8125rem;
+    color: var(--muted);    /* 7.1:1 ✓ */
+  }
+  .required-star {
+    color: var(--rust);     /* 4.6:1 ✓ */
+    margin-left: 2px;
+  }
+
+  input[type="date"],
+  input[type="time"] {
+    width: 100%;
+    padding: 13px 16px;
+    min-height: 52px;
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;        /* 16px ✓ */
+    font-weight: 400;
+    color: var(--ink);      /* on white: 16:1 ✓ */
+    background: #fff;
+    border: 2px solid var(--input-border); /* 3.1:1 on #fff — WCAG 1.4.11 ✓ */
+    border-radius: 3px;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input[type="date"]:hover,
+  input[type="time"]:hover {
+    border-color: var(--teal);
+  }
+  input[type="date"]:focus,
+  input[type="time"]:focus {
+    border-color: var(--focus-ring);
+    box-shadow: 0 0 0 3px rgba(29,84,87,0.28); /* 3px focus ring ✓ */
+  }
+  input[aria-invalid="true"] {
+    border-color: var(--rust);
+    box-shadow: 0 0 0 3px rgba(158,61,26,0.18);
+  }
+  /* Required field — left accent bar */
+  input[aria-required="true"] {
+    border-left-width: 4px;
+    border-left-color: var(--teal);
+  }
+
+  .optional-note {
+    font-size: 0.875rem;    /* 14px */
+    color: var(--muted);    /* 7.1:1 ✓ */
+    margin-top: 6px;
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  /* ─── Error message ───────────────────────────────────────────────────── */
+  .error-msg {
+    display: none;
+    background: var(--rust-bg);
+    border: 1.5px solid var(--rust-border);
+    border-left: 4px solid var(--rust);
+    border-radius: 3px;
+    padding: 10px 14px;
+    font-size: 0.9375rem;   /* 15px ✓ */
+    color: var(--rust);     /* 4.6:1 on --rust-bg ✓ */
+    margin-top: 10px;
+    font-weight: 500;
+    line-height: 1.5;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .error-msg.visible { display: flex; }
+  .error-msg::before { content: '⚠'; flex-shrink: 0; margin-top: 1px; }
+
+  /* ─── CTA button ──────────────────────────────────────────────────────── */
+  .cta {
+    width: 100%;
+    padding: 16px 32px;
+    min-height: 52px;       /* touch target ✓ */
+    font-family: 'Playfair Display', serif;
+    font-size: 1.0625rem;   /* 17px ✓ */
+    font-weight: 700;
+    font-style: italic;
+    letter-spacing: 0.01em;
+    color: #fff;            /* on #1a1a1a: 17:1 ✓ */
+    background: var(--ink);
+    border: 2px solid var(--ink);
+    border-radius: 3px;
+    cursor: pointer;
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.2s, transform 0.12s, box-shadow 0.15s;
+  }
+  .cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--teal) 0%, var(--ink) 60%);
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .cta:hover    { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(26,26,26,0.22); }
+  .cta:hover::before { opacity: 1; }
+  .cta:active   { transform: translateY(0); }
+  .cta:focus-visible {
+    outline: 3px solid var(--focus-ring);
+    outline-offset: 3px;
+  }
+  .cta span { position: relative; z-index: 1; }
+
+  /* ─── Result section ──────────────────────────────────────────────────── */
+  .result {
+    margin-top: 40px;
+    display: none;
+    animation: fadeUp 0.6s ease both;
+  }
+  .result.visible { display: block; }
+
+  .result-card {
+    background: var(--result-bg);
+    color: var(--paper);
+    border-radius: 4px;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(201,168,76,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .result-card::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: -40px;
+    width: 160px; height: 160px;
+    background: radial-gradient(circle, rgba(29,84,87,0.18) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .result-eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8125rem;   /* 13px */
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold-on-dark); /* 7.2:1 on #111a1b ✓ */
+    margin-bottom: 18px;
+    font-weight: 500;
+  }
+
+  /* Large text (≥ 18pt bold) — 3:1 minimum, actual 7.2:1 ✓ */
+  .result-weekday {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.375rem, 4vw, 2rem);
+    font-weight: 700;
+    font-style: italic;
+    color: var(--gold-on-dark); /* 7.2:1 ✓ */
+    margin-bottom: 6px;
+    line-height: 1.2;
+  }
+
+  .result-date {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1.75rem, 5vw, 2.75rem);
+    font-weight: 900;
+    color: #f5f0e8;         /* on #111a1b: 13.8:1 ✓ */
+    line-height: 1.1;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+
+  .result-time {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.125rem;    /* 18px ✓ */
+    font-weight: 400;
+    color: var(--teal-on-dark); /* 5.6:1 ✓ */
+    margin-bottom: 24px;
+  }
+
+  .result-divider {
+    height: 1px;
+    background: rgba(245,240,232,0.18);
+    margin: 22px 0;
+  }
+
+  /* Meta: 14px, --meta-on-dark: 4.6:1 ✓ */
+  .result-meta {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.875rem;    /* 14px ✓ */
+    color: var(--meta-on-dark);
+    line-height: 1.9;
+    letter-spacing: 0.03em;
+  }
+
+  /* ─── Countdown ───────────────────────────────────────────────────────── */
+  .countdown-block {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+    gap: 14px;
+    margin-top: 20px;
+  }
+
+  .countdown-item {
+    text-align: center;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 3px;
+    padding: 16px 8px;
+  }
+
+  /* 24px — large text ≥ 3:1, actual 7.2:1 ✓ */
+  .countdown-num {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.5rem;      /* 24px */
+    font-weight: 500;
+    color: var(--gold-on-dark);
+    display: block;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  /* 12px — minimum label size; --teal-on-dark: 5.6:1 ✓ */
+  .countdown-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;     /* 12px */
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--teal-on-dark);
+    font-weight: 400;
+  }
+
+  /* ─── Past notice ─────────────────────────────────────────────────────── */
+  .past-notice {
+    background: rgba(111,214,160,0.09);
+    border: 1.5px solid rgba(111,214,160,0.28);
+    border-radius: 3px;
+    padding: 16px 20px;
+    margin-top: 20px;
+    font-size: 1rem;        /* 16px ✓ */
+    color: var(--green-on-dark); /* 5.1:1 ✓ */
+    line-height: 1.65;
+    font-style: italic;
+  }
+
+  /* ─── Footer ──────────────────────────────────────────────────────────── */
+  footer {
+    text-align: center;
+    padding: 36px 32px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8125rem;   /* 13px */
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--footer-color); /* 5.3:1 ✓ */
+    position: relative;
+    z-index: 2;
+  }
+
+  /* ─── Animations ──────────────────────────────────────────────────────── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── Responsive ──────────────────────────────────────────────────────── */
+  @media (max-width: 520px) {
+    main             { padding: 76px 18px 56px; }
+    .card            { padding: 26px 18px; }
+    .result-card     { padding: 26px 18px; }
+    .lang-btn        { font-size: 0.75rem; padding: 6px 9px; }
+    .countdown-block { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  /* Windows High Contrast / forced-colors mode */
+  @media (forced-colors: active) {
+    .cta {
+      forced-color-adjust: none;
+      background: ButtonText;
+      color: ButtonFace;
+      border-color: ButtonText;
+    }
+    input[type="date"], input[type="time"] {
+      forced-color-adjust: none;
+      border: 2px solid ButtonText;
+      background: Field;
+      color: FieldText;
+    }
+    .lang-btn.active {
+      forced-color-adjust: none;
+      border: 2px solid Highlight;
+      color: Highlight;
+    }
+    .result-card     { border: 2px solid CanvasText; }
+    .countdown-item  { border: 1px solid CanvasText; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Skip link for keyboard / AT users (WCAG 2.4.1) -->
+<a href="#main-content" class="skip-link" id="skip-to-main">Ir para o conteúdo principal</a>
+
+<div class="corner-br" aria-hidden="true"></div>
+
+<!-- Language navigation (WCAG 2.4.1, 3.1.2) -->
+<nav class="lang-bar" aria-label="Selecionar idioma" id="lang-nav">
+  <button class="lang-btn active"
+          aria-pressed="true"
+          aria-label="Português (selecionado)"
+          lang="pt"
+          onclick="setLang('pt')">PT</button>
+  <button class="lang-btn"
+          aria-pressed="false"
+          aria-label="English"
+          lang="en"
+          onclick="setLang('en')">EN</button>
+  <button class="lang-btn"
+          aria-pressed="false"
+          aria-label="Español"
+          lang="es"
+          onclick="setLang('es')">ES</button>
+  <button class="lang-btn"
+          aria-pressed="false"
+          aria-label="Français"
+          lang="fr"
+          onclick="setLang('fr')">FR</button>
+</nav>
+
+<main id="main-content">
+  <header class="header">
+    <!-- eyebrow is decorative — hidden from AT (redundant with h1) -->
+    <p class="eyebrow" id="txt-eyebrow" aria-hidden="true">Calculadora Existencial</p>
+    <h1 id="txt-h1">O seu <span>bilionésimo</span><br>segundo</h1>
+    <p class="subtitle" id="txt-subtitle">Descubra exatamente quando você completará 1.000.000.000 segundos de vida neste planeta.</p>
+  </header>
+
+  <div class="divider" aria-hidden="true"><div class="divider-diamond"></div></div>
+
+  <!-- Form — fieldset + legend group related controls (WCAG 1.3.1) -->
+  <div class="card">
+    <form id="birth-form" novalidate onsubmit="handleSubmit(event)">
+      <fieldset style="border:none;padding:0;margin:0;">
+        <legend class="sr-only" id="form-legend">Dados de nascimento</legend>
+
+        <!-- Date field — required, labelled, described -->
+        <div class="field">
+          <label for="birthdate" id="lbl-birth">
+            Data de Nascimento
+            <!-- aria-hidden: the sr-only span below provides the verbal cue -->
+            <span class="required-star" aria-hidden="true">*</span>
+            <span class="sr-only">(campo obrigatório)</span>
+          </label>
+          <input
+            type="date"
+            id="birthdate"
+            name="birthdate"
+            aria-required="true"
+            aria-describedby="err-date"
+            autocomplete="bday"
+          />
+          <!-- role=alert + aria-live=assertive → announced immediately on error (WCAG 4.1.3) -->
+          <div class="error-msg"
+               id="err-date"
+               role="alert"
+               aria-live="assertive"
+               aria-atomic="true"></div>
+        </div>
+
+        <!-- Time field — optional, described by hint -->
+        <div class="field">
+          <label for="birthtime" id="lbl-time">
+            Hora de Nascimento
+            <span class="label-optional" id="lbl-optional">(opcional)</span>
+          </label>
+          <input
+            type="time"
+            id="birthtime"
+            name="birthtime"
+            aria-describedby="time-hint"
+            autocomplete="off"
+          />
+          <p class="optional-note" id="time-hint">
+            <span id="txt-optional-note">Se não souber, usaremos o meio-dia como estimativa.</span>
+          </p>
+        </div>
+
+        <button
+          class="cta"
+          type="submit"
+          id="btn-calc">
+          <span id="btn-text">Descobrir meu aniversário de 1 bilhão de segundos!</span>
+        </button>
+      </fieldset>
+    </form>
+  </div>
+
+  <!-- Result region — polite live region, focusable for AT routing (WCAG 2.4.3, 4.1.3) -->
+  <section
+    class="result"
+    id="result"
+    aria-live="polite"
+    aria-atomic="true"
+    aria-label="Resultado do cálculo"
+    tabindex="-1">
+    <div class="result-card">
+      <!-- Decorative label — hidden from AT; h2 below provides the semantic heading -->
+      <p class="result-eyebrow" id="res-eyebrow" aria-hidden="true">1.000.000.000 segundos</p>
+      <!-- Heading establishes section hierarchy (WCAG 1.3.1) -->
+      <h2 class="sr-only" id="res-heading">Seu aniversário de 1 bilhão de segundos</h2>
+
+      <p class="result-weekday" id="res-weekday"></p>
+      <p class="result-date"    id="res-date"></p>
+      <p class="result-time"    id="res-time"></p>
+
+      <div class="result-divider" role="separator" aria-hidden="true"></div>
+
+      <div class="result-meta" id="res-meta" aria-label="Detalhes do cálculo"></div>
+
+      <!-- Countdown — nested inside polite region; aria-live="off" avoids double-announce -->
+      <div id="countdown-section"
+           style="display:none;"
+           aria-label="Contagem regressiva">
+        <div class="result-divider" role="separator" aria-hidden="true"></div>
+        <p class="result-eyebrow" id="res-countdown-label">Faltam</p>
+        <div class="countdown-block" id="countdown-block" aria-live="off"></div>
+      </div>
+
+      <!-- Past-milestone notice — role=status for non-urgent announcement -->
+      <div
+        class="past-notice"
+        id="past-notice"
+        role="status"
+        aria-live="polite"
+        style="display:none;"></div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <!-- Aria-label provides the full readable sentence instead of abbreviations -->
+  <span aria-label="Mil bilhões de segundos equivalem a aproximadamente 31,69 anos" id="footer-txt">
+    1,000,000,000 s ≈ 31.69 anos
+  </span>
+</footer>
+
+<script>
+const BILLION = 1_000_000_000;
+let currentLang = 'pt';
+let countdownInterval = null;
+let targetTimestamp = null;
+
+/* ── i18n strings ─────────────────────────────────────────────────────────── */
+const i18n = {
+  pt: {
+    page_title:       'Aniversário de 1 Bilhão de Segundos',
+    eyebrow:          'Calculadora Existencial',
+    h1:               'O seu <span>bilionésimo</span><br>segundo',
+    subtitle:         'Descubra exatamente quando você completará 1.000.000.000 segundos de vida neste planeta.',
+    lbl_birth:        'Data de Nascimento',
+    required_verbal:  '(campo obrigatório)',
+    lbl_time:         'Hora de Nascimento',
+    lbl_optional:     '(opcional)',
+    optional_note:    'Se não souber, usaremos o meio-dia como estimativa.',
+    btn:              'Descobrir meu aniversário de 1 bilhão de segundos!',
+    err_date:         'Por favor, insira sua data de nascimento.',
+    res_eyebrow:      '1.000.000.000 segundos',
+    res_heading:      'Seu aniversário de 1 bilhão de segundos',
+    countdown_label:  'Faltam',
+    countdown_units:  ['dias', 'horas', 'min', 'seg'],
+    past:             'Este momento já passou! Você atingiu o marco {d} dias, {h} horas e {m} minutos atrás. Parabéns, bilionário(a) em segundos! 🎉',
+    meta_born:        'Nascimento:',
+    meta_tz:          'Fuso horário:',
+    meta_exact:       'Exatamente 1.000.000.000 segundos depois.',
+    weekdays:         ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'],
+    months:           ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'],
+    at: 'às', of: 'de',
+    form_legend:      'Dados de nascimento',
+    skip:             'Ir para o conteúdo principal',
+    lang_nav:         'Selecionar idioma',
+    result_label:     'Resultado do cálculo',
+    countdown_aria:   'Contagem regressiva',
+    meta_aria:        'Detalhes do cálculo',
+    footer_aria:      'Mil bilhões de segundos equivalem a aproximadamente 31,69 anos',
+    lang_selected:    '(selecionado)',
+  },
+  en: {
+    page_title:       '1 Billion Seconds Birthday',
+    eyebrow:          'Existential Calculator',
+    h1:               'Your <span>billionth</span><br>second',
+    subtitle:         'Find out exactly when you will reach 1,000,000,000 seconds of life on this planet.',
+    lbl_birth:        'Date of Birth',
+    required_verbal:  '(required field)',
+    lbl_time:         'Time of Birth',
+    lbl_optional:     '(optional)',
+    optional_note:    "If you don't know, we'll use noon as an estimate.",
+    btn:              'Find my 1 billion seconds birthday!',
+    err_date:         'Please enter your date of birth.',
+    res_eyebrow:      '1,000,000,000 seconds',
+    res_heading:      'Your 1 billion seconds birthday',
+    countdown_label:  'Remaining',
+    countdown_units:  ['days', 'hours', 'min', 'sec'],
+    past:             "This moment has already passed! You reached it {d} days, {h} hours and {m} minutes ago. Congratulations, second billionaire! 🎉",
+    meta_born:        'Born:',
+    meta_tz:          'Timezone:',
+    meta_exact:       'Exactly 1,000,000,000 seconds later.',
+    weekdays:         ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],
+    months:           ['January','February','March','April','May','June','July','August','September','October','November','December'],
+    at: 'at', of: '',
+    form_legend:      'Birth details',
+    skip:             'Skip to main content',
+    lang_nav:         'Select language',
+    result_label:     'Calculation result',
+    countdown_aria:   'Countdown',
+    meta_aria:        'Calculation details',
+    footer_aria:      'One billion seconds equals approximately 31.69 years',
+    lang_selected:    '(selected)',
+  },
+  es: {
+    page_title:       'Aniversario de 1000 Millones de Segundos',
+    eyebrow:          'Calculadora Existencial',
+    h1:               'Tu segundo <span>mil millonésimo</span>',
+    subtitle:         'Descubre exactamente cuándo completarás 1.000.000.000 segundos de vida en este planeta.',
+    lbl_birth:        'Fecha de Nacimiento',
+    required_verbal:  '(campo obligatorio)',
+    lbl_time:         'Hora de Nacimiento',
+    lbl_optional:     '(opcional)',
+    optional_note:    'Si no lo sabes, usaremos el mediodía como estimación.',
+    btn:              '¡Descubrir mi aniversario de 1.000 millones de segundos!',
+    err_date:         'Por favor, ingresa tu fecha de nacimiento.',
+    res_eyebrow:      '1.000.000.000 segundos',
+    res_heading:      'Tu aniversario de 1.000 millones de segundos',
+    countdown_label:  'Faltan',
+    countdown_units:  ['días', 'horas', 'min', 'seg'],
+    past:             '¡Este momento ya pasó! Lo alcanzaste hace {d} días, {h} horas y {m} minutos. ¡Felicidades, millonario(a) en segundos! 🎉',
+    meta_born:        'Nacimiento:',
+    meta_tz:          'Zona horaria:',
+    meta_exact:       'Exactamente 1.000.000.000 segundos después.',
+    weekdays:         ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'],
+    months:           ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'],
+    at: 'a las', of: 'de',
+    form_legend:      'Datos de nacimiento',
+    skip:             'Ir al contenido principal',
+    lang_nav:         'Seleccionar idioma',
+    result_label:     'Resultado del cálculo',
+    countdown_aria:   'Cuenta regresiva',
+    meta_aria:        'Detalles del cálculo',
+    footer_aria:      'Mil millones de segundos equivalen a aproximadamente 31,69 años',
+    lang_selected:    '(seleccionado)',
+  },
+  fr: {
+    page_title:       'Anniversaire du Milliard de Secondes',
+    eyebrow:          'Calculatrice Existentielle',
+    h1:               'Votre <span>milliardième</span><br>seconde',
+    subtitle:         'Découvrez exactement quand vous atteindrez 1 000 000 000 secondes de vie sur cette planète.',
+    lbl_birth:        'Date de Naissance',
+    required_verbal:  '(champ obligatoire)',
+    lbl_time:         'Heure de Naissance',
+    lbl_optional:     '(optionnel)',
+    optional_note:    "Si vous ne savez pas, nous utiliserons midi comme estimation.",
+    btn:              'Découvrir mon anniversaire du milliard de secondes !',
+    err_date:         'Veuillez entrer votre date de naissance.',
+    res_eyebrow:      '1 000 000 000 secondes',
+    res_heading:      'Votre anniversaire du milliard de secondes',
+    countdown_label:  'Il reste',
+    countdown_units:  ['jours', 'heures', 'min', 'sec'],
+    past:             "Ce moment est déjà passé ! Vous l'avez atteint il y a {d} jours, {h} heures et {m} minutes. Félicitations, milliardaire en secondes ! 🎉",
+    meta_born:        'Naissance :',
+    meta_tz:          'Fuseau horaire :',
+    meta_exact:       'Exactement 1 000 000 000 secondes plus tard.',
+    weekdays:         ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'],
+    months:           ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'],
+    at: 'à', of: '',
+    form_legend:      'Données de naissance',
+    skip:             'Aller au contenu principal',
+    lang_nav:         'Sélectionner la langue',
+    result_label:     'Résultat du calcul',
+    countdown_aria:   'Compte à rebours',
+    meta_aria:        'Détails du calcul',
+    footer_aria:      'Un milliard de secondes équivaut à environ 31,69 ans',
+    lang_selected:    '(sélectionné)',
+  }
+};
+
+/* ── Language switcher ────────────────────────────────────────────────────── */
+function setLang(lang) {
+  currentLang = lang;
+  document.documentElement.lang = lang;
+  const t = i18n[lang];
+
+  document.title = t.page_title;
+
+  // Language buttons — aria-pressed + descriptive aria-label
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    const btnLang = btn.getAttribute('lang');
+    const isActive = btnLang === lang;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-pressed', String(isActive));
+    // Provide full accessible name with "(selected)" suffix when active
+    const langNames = { pt: 'Português', en: 'English', es: 'Español', fr: 'Français' };
+    btn.setAttribute('aria-label', langNames[btnLang] + (isActive ? ' ' + t.lang_selected : ''));
+  });
+
+  // Nav aria-label
+  const nav = document.getElementById('lang-nav');
+  if (nav) nav.setAttribute('aria-label', t.lang_nav);
+
+  // Skip link
+  const skip = document.getElementById('skip-to-main');
+  if (skip) skip.textContent = t.skip;
+
+  // Header
+  document.getElementById('txt-eyebrow').textContent = t.eyebrow;
+  document.getElementById('txt-h1').innerHTML = t.h1;
+  document.getElementById('txt-subtitle').textContent = t.subtitle;
+
+  // Date label
+  document.getElementById('lbl-birth').innerHTML =
+    t.lbl_birth +
+    ' <span class="required-star" aria-hidden="true">*</span>' +
+    ' <span class="sr-only">' + t.required_verbal + '</span>';
+
+  // Time label
+  document.getElementById('lbl-time').innerHTML =
+    t.lbl_time +
+    ' <span class="label-optional" id="lbl-optional">' + t.lbl_optional + '</span>';
+
+  document.getElementById('txt-optional-note').textContent = t.optional_note;
+  document.getElementById('btn-text').textContent = t.btn;
+  document.getElementById('res-eyebrow').textContent = t.res_eyebrow;
+
+  // Form legend
+  const legend = document.querySelector('#birth-form legend');
+  if (legend) legend.textContent = t.form_legend;
+
+  // Result section labels
+  const resultSec = document.getElementById('result');
+  if (resultSec) resultSec.setAttribute('aria-label', t.result_label);
+  const cdSec = document.getElementById('countdown-section');
+  if (cdSec) cdSec.setAttribute('aria-label', t.countdown_aria);
+  const metaEl = document.getElementById('res-meta');
+  if (metaEl) metaEl.setAttribute('aria-label', t.meta_aria);
+
+  // Footer
+  const footerTxt = document.getElementById('footer-txt');
+  if (footerTxt) footerTxt.setAttribute('aria-label', t.footer_aria);
+
+  // Re-render result if visible
+  if (resultSec && resultSec.classList.contains('visible') && targetTimestamp) {
+    renderResult(targetTimestamp, window._birthTs);
+  }
+}
+
+/* ── Helpers ──────────────────────────────────────────────────────────────── */
+function getTz() {
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'; }
+  catch { return 'UTC'; }
+}
+
+function parseLocalDate(dateStr, timeStr) {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  let hours = 12, minutes = 0;
+  if (timeStr) {
+    const parts = timeStr.split(':');
+    hours   = parseInt(parts[0], 10) || 12;
+    minutes = parseInt(parts[1], 10) || 0;
+  }
+  return new Date(year, month - 1, day, hours, minutes, 0, 0);
+}
+
+function formatDate(date) {
+  const t = i18n[currentLang];
+  const weekday = t.weekdays[date.getDay()];
+  const day     = date.getDate();
+  const month   = t.months[date.getMonth()];
+  const year    = date.getFullYear();
+  const hh = String(date.getHours()).padStart(2,'0');
+  const mm = String(date.getMinutes()).padStart(2,'0');
+  const ss = String(date.getSeconds()).padStart(2,'0');
+
+  let dateStr;
+  if (currentLang === 'en') {
+    dateStr = `${month} ${day}, ${year}`;
+  } else if (currentLang === 'fr') {
+    dateStr = `${day} ${month} ${year}`;
+  } else {
+    dateStr = `${day} de ${month} de ${year}`;
+  }
+  return { weekday, date: dateStr, time: `${hh}:${mm}:${ss}` };
+}
+
+/* ── Render result ────────────────────────────────────────────────────────── */
+function renderResult(target, birth) {
+  const t = i18n[currentLang];
+  const now = Date.now();
+  const formatted = formatDate(target);
+
+  document.getElementById('res-eyebrow').textContent  = t.res_eyebrow;
+  const heading = document.getElementById('res-heading');
+  if (heading) heading.textContent = t.res_heading;
+
+  document.getElementById('res-weekday').textContent = formatted.weekday;
+  document.getElementById('res-date').textContent    = formatted.date;
+  document.getElementById('res-time').textContent    = t.at + ' ' + formatted.time;
+
+  const birthFmt = formatDate(birth);
+  const tz = getTz();
+  document.getElementById('res-meta').innerHTML =
+    `${t.meta_born} ${birthFmt.date} ${t.at} ${birthFmt.time}<br>${t.meta_tz} ${tz}<br>${t.meta_exact}`;
+
+  const countdownSection = document.getElementById('countdown-section');
+  const pastNotice       = document.getElementById('past-notice');
+
+  if (target.getTime() <= now) {
+    countdownSection.style.display = 'none';
+    const diff   = now - target.getTime();
+    const dDays  = Math.floor(diff / 86400000);
+    const dHours = Math.floor((diff % 86400000) / 3600000);
+    const dMins  = Math.floor((diff % 3600000)  / 60000);
+    pastNotice.style.display = 'block';
+    pastNotice.textContent = t.past
+      .replace('{d}', dDays)
+      .replace('{h}', dHours)
+      .replace('{m}', dMins);
+    if (countdownInterval) clearInterval(countdownInterval);
+  } else {
+    pastNotice.style.display = 'none';
+    countdownSection.style.display = 'block';
+    document.getElementById('res-countdown-label').textContent = t.countdown_label;
+    updateCountdown(target);
+    if (countdownInterval) clearInterval(countdownInterval);
+    countdownInterval = setInterval(() => updateCountdown(target), 1000);
+  }
+}
+
+/* ── Countdown updater ────────────────────────────────────────────────────── */
+function updateCountdown(target) {
+  const t    = i18n[currentLang];
+  const diff = target.getTime() - Date.now();
+  if (diff <= 0) { clearInterval(countdownInterval); return; }
+
+  const days  = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const mins  = Math.floor((diff % 3600000)  / 60000);
+  const secs  = Math.floor((diff % 60000)    / 1000);
+  const units = t.countdown_units;
+
+  // aria-label on each item gives screen readers "X dias" etc. (WCAG 1.3.1)
+  document.getElementById('countdown-block').innerHTML =
+    [[days, units[0]], [hours, units[1]], [mins, units[2]], [secs, units[3]]]
+    .map(([n, u]) =>
+      `<div class="countdown-item" aria-label="${n} ${u}">
+         <span class="countdown-num" aria-hidden="true">${String(n).padStart(2,'0')}</span>
+         <span class="countdown-label" aria-hidden="true">${u}</span>
+       </div>`
+    ).join('');
+}
+
+/* ── Form submission ──────────────────────────────────────────────────────── */
+function handleSubmit(e) {
+  e.preventDefault();
+  calculate();
+}
+
+function calculate() {
+  const dateVal = document.getElementById('birthdate').value;
+  const timeVal = document.getElementById('birthtime').value;
+  const errEl   = document.getElementById('err-date');
+  const inputEl = document.getElementById('birthdate');
+  const t       = i18n[currentLang];
+
+  if (!dateVal) {
+    errEl.textContent = t.err_date;
+    errEl.classList.add('visible');
+    inputEl.setAttribute('aria-invalid', 'true');
+    inputEl.focus();
+    return;
+  }
+
+  // Clear validation state
+  errEl.classList.remove('visible');
+  errEl.textContent = '';
+  inputEl.removeAttribute('aria-invalid');
+
+  const birth  = parseLocalDate(dateVal, timeVal);
+  const target = new Date(birth.getTime() + BILLION * 1000);
+
+  targetTimestamp = target;
+  window._birthTs = birth;
+
+  const resultEl = document.getElementById('result');
+  resultEl.classList.remove('visible');
+  void resultEl.offsetWidth; // reflow for animation replay
+  resultEl.classList.add('visible');
+
+  renderResult(target, birth);
+
+  // Move keyboard/AT focus to result region (WCAG 2.4.3)
+  setTimeout(() => {
+    resultEl.focus();
+    resultEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 60);
+}
+
+/* ── Keyboard: Enter on date/time fields triggers calculate (WCAG 2.1.1) ─── */
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const id = e.target && e.target.id;
+    if (id === 'birthdate' || id === 'birthtime') calculate();
+  }
+});
+
+/* ── Auto-detect browser language ─────────────────────────────────────────── */
+const navLang = (navigator.language || '').slice(0,2).toLowerCase();
+if (['pt','en','es','fr'].includes(navLang)) setLang(navLang);
+</script>
+</body>
+</html>

@@ -1,72 +1,56 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
-
     <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Homoglyphs</title>
-        <link
-            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-            rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
         <link
             href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-            rel="stylesheet">
+            rel="stylesheet"
+        />
     </head>
-
     <body>
         <main class="container py-4" style="max-width: 900px">
-
-            <header
-                class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
+            <header class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
                 <div>
-                    <h1 class="h2 mb-1"><i class="bi bi-fonts me-2"></i><span
-                            data-i18n="title"></span></h1>
-                    <p class="text-body-secondary mb-0" data-i18n="subtitle">
-                    </p>
+                    <h1 class="h2 mb-1"><i class="bi bi-fonts me-2"></i><span data-i18n="title"></span></h1>
+                    <p class="text-body-secondary mb-0" data-i18n="subtitle"></p>
                 </div>
                 <div class="input-group w-auto">
-                    <span class="input-group-text"><i
-                            class="bi bi-translate"></i></span>
-                    <select id="lang" class="form-select"
-                        aria-label="Language"></select>
+                    <span class="input-group-text"><i class="bi bi-translate"></i></span>
+                    <select id="lang" class="form-select" aria-label="Language"></select>
                 </div>
             </header>
 
             <section class="mb-4">
-                <label for="input" class="form-label fw-semibold"
-                    data-i18n="inputLabel"></label>
-                <textarea id="input" class="form-control form-control-lg"
+                <label for="input" class="form-label fw-semibold" data-i18n="inputLabel"></label>
+                <textarea
+                    id="input"
+                    class="form-control form-control-lg"
                     rows="7"
-                    data-i18n-placeholder="inputPlaceholder"></textarea>
+                    data-i18n-placeholder="inputPlaceholder"
+                ></textarea>
             </section>
 
             <section class="card mb-4">
                 <div class="card-body">
-                    <h2 class="h5 mb-3"><i
-                            class="bi bi-check2-square me-2"></i><span
-                            data-i18n="lettersTitle"></span></h2>
+                    <h2 class="h5 mb-3">
+                        <i class="bi bi-check2-square me-2"></i><span data-i18n="lettersTitle"></span>
+                    </h2>
 
                     <div class="d-grid gap-2 d-md-flex mb-3">
-                        <button type="button"
-                            class="btn btn-primary btn-lg fw-semibold flex-md-fill"
-                            id="selAll"><i
-                                class="bi bi-check-circle-fill me-2"></i><span
-                                data-i18n="selectAll"></span></button>
-                        <button type="button"
-                            class="btn btn-danger btn-lg fw-semibold flex-md-fill"
-                            id="selNone"><i
-                                class="bi bi-x-circle-fill me-2"></i><span
-                                data-i18n="selectNone"></span></button>
+                        <button type="button" class="btn btn-primary btn-lg fw-semibold flex-md-fill" id="selAll">
+                            <i class="bi bi-check-circle-fill me-2"></i><span data-i18n="selectAll"></span>
+                        </button>
+                        <button type="button" class="btn btn-danger btn-lg fw-semibold flex-md-fill" id="selNone">
+                            <i class="bi bi-x-circle-fill me-2"></i><span data-i18n="selectNone"></span>
+                        </button>
                     </div>
 
-                    <ul
-                        class="list-unstyled d-flex flex-wrap column-gap-4 row-gap-1 mb-4">
-                        <li><i
-                                class="bi bi-check-lg text-success fs-5 me-1"></i><span
-                                data-i18n="legendOn"></span></li>
-                        <li><i
-                                class="bi bi-x-lg text-danger fs-5 me-1"></i><span
-                                data-i18n="legendOff"></span></li>
+                    <ul class="list-unstyled d-flex flex-wrap column-gap-4 row-gap-1 mb-4">
+                        <li><i class="bi bi-check-lg text-success fs-5 me-1"></i><span data-i18n="legendOn"></span></li>
+                        <li><i class="bi bi-x-lg text-danger fs-5 me-1"></i><span data-i18n="legendOff"></span></li>
                     </ul>
 
                     <h3 class="h6 mb-2" data-i18n="uppercase"></h3>
@@ -78,224 +62,232 @@
             </section>
 
             <section class="mb-4">
-                <div
-                    class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
-                    <label for="output" class="form-label fw-semibold mb-0"
-                        data-i18n="outputLabel"></label>
-                    <span class="badge text-bg-secondary fs-6"><span
-                            data-i18n="replaced"></span>: <span
-                            id="count">0</span></span>
+                <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-2">
+                    <div class="d-flex flex-wrap align-items-center gap-2">
+                        <label for="output" class="form-label fw-semibold mb-0" data-i18n="outputLabel"></label>
+                        <span class="badge text-bg-secondary fs-6"
+                            ><span data-i18n="replaced"></span>: <span id="count">0</span></span
+                        >
+                    </div>
+                    <div class="input-group col-12 col-sm-auto">
+                        <label for="fontSelect" class="input-group-text"
+                            ><i class="bi bi-type me-2"></i><span data-i18n="fontLabel"></span
+                        ></label>
+                        <select id="fontSelect" class="form-select"></select>
+                    </div>
                 </div>
-                <textarea id="output"
+                <textarea
+                    id="output"
                     class="form-control form-control-lg bg-body-tertiary"
-                    rows="7" readonly></textarea>
-                <button type="button" id="copy"
-                    class="btn btn-success btn-lg w-100 mt-3">
-                    <i class="bi bi-clipboard me-2" id="copyIcon"></i><span
-                        id="copyText"></span>
+                    rows="7"
+                    readonly
+                ></textarea>
+                <button type="button" id="copy" class="btn btn-success btn-lg w-100 mt-3">
+                    <i class="bi bi-clipboard me-2" id="copyIcon"></i><span id="copyText"></span>
                 </button>
             </section>
 
             <p class="text-body-secondary" data-i18n="note"></p>
         </main>
 
-        <script
-            src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
-        </script>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
         <script>
             /* ---------- Dark/light automático ---------- */
-            const mq = matchMedia('(prefers-color-scheme: dark)');
-            const applyTheme = () => document.documentElement.setAttribute(
-                'data-bs-theme', mq.matches ? 'dark' : 'light');
+            const mq = matchMedia("(prefers-color-scheme: dark)");
+            const applyTheme = () =>
+                document.documentElement.setAttribute("data-bs-theme", mq.matches ? "dark" : "light");
             applyTheme();
-            mq.addEventListener('change', applyTheme);
+            mq.addEventListener("change", applyTheme);
 
             /* ---------- Traduções: para adicionar um idioma, copie um bloco e traduza ---------- */
             const translations = {
                 pt: {
-                    name: 'Português',
-                    title: 'Conversor de homóglifos',
-                    subtitle: 'Troque letras por caracteres visualmente idênticos para driblar filtros de palavras.',
-                    inputLabel: 'Seu texto',
-                    inputPlaceholder: 'Digite ou cole seu texto aqui…',
-                    lettersTitle: 'Letras que serão trocadas',
-                    selectAll: 'Marcar todas para substituir',
-                    legendOn: 'Com ✓: a letra será substituída',
-                    legendOff: 'Com ✗: a letra fica como está',
-                    selectNone: 'Desmarcar todas as substituições',
-                    uppercase: 'Maiúsculas',
-                    lowercase: 'Minúsculas',
-                    outputLabel: 'Resultado',
-                    replaced: 'Letras trocadas',
-                    copy: 'Copiar resultado',
-                    copied: 'Copiado!',
-                    copyError: 'Não foi possível copiar',
-                    note: 'Dica: desmarque as letras que parecem diferentes na sua fonte e troque apenas as letras das palavras bloqueadas.'
+                    name: "Português",
+                    title: "Conversor de homóglifos",
+                    subtitle: "Troque letras por caracteres visualmente idênticos para driblar filtros de palavras.",
+                    inputLabel: "Seu texto",
+                    inputPlaceholder: "Digite ou cole seu texto aqui…",
+                    lettersTitle: "Letras que serão trocadas",
+                    selectAll: "Marcar todas para substituir",
+                    legendOn: "Com ✓: a letra será substituída",
+                    legendOff: "Com ✗: a letra fica como está",
+                    selectNone: "Desmarcar todas as substituições",
+                    uppercase: "Maiúsculas",
+                    lowercase: "Minúsculas",
+                    outputLabel: "Resultado",
+                    fontLabel: "Fonte",
+                    fontDefault: "Padrão",
+                    replaced: "Letras trocadas",
+                    copy: "Copiar resultado",
+                    copied: "Copiado!",
+                    copyError: "Não foi possível copiar",
+                    note: "Dica: desmarque as letras que parecem diferentes na sua fonte e troque apenas as letras das palavras bloqueadas.",
                 },
                 en: {
-                    name: 'English',
-                    title: 'Homoglyph converter',
-                    subtitle: 'Swap letters for look-alike characters to get past word filters.',
-                    inputLabel: 'Your text',
-                    inputPlaceholder: 'Type or paste your text here…',
-                    lettersTitle: 'Letters to replace',
-                    selectAll: 'Select all to replace',
-                    legendOn: 'With ✓: the letter will be replaced',
-                    legendOff: 'With ✗: the letter stays as it is',
-                    selectNone: 'Clear all replacements',
-                    uppercase: 'Uppercase',
-                    lowercase: 'Lowercase',
-                    outputLabel: 'Result',
-                    replaced: 'Letters replaced',
-                    copy: 'Copy result',
-                    copied: 'Copied!',
-                    copyError: 'Could not copy',
-                    note: 'Tip: uncheck letters that look different in your font and only replace letters in the blocked words.'
-                }
+                    name: "English",
+                    title: "Homoglyph converter",
+                    subtitle: "Swap letters for look-alike characters to get past word filters.",
+                    inputLabel: "Your text",
+                    inputPlaceholder: "Type or paste your text here…",
+                    lettersTitle: "Letters to replace",
+                    selectAll: "Select all to replace",
+                    legendOn: "With ✓: the letter will be replaced",
+                    legendOff: "With ✗: the letter stays as it is",
+                    selectNone: "Clear all replacements",
+                    uppercase: "Uppercase",
+                    lowercase: "Lowercase",
+                    outputLabel: "Result",
+                    fontLabel: "Font",
+                    fontDefault: "Default",
+                    replaced: "Letters replaced",
+                    copy: "Copy result",
+                    copied: "Copied!",
+                    copyError: "Could not copy",
+                    note: "Tip: uncheck letters that look different in your font and only replace letters in the blocked words.",
+                },
             };
 
             const homoglyphs = {
-                A: 'А',
-                B: 'В',
-                C: 'С',
-                D: 'Ⅾ',
-                E: 'Е',
-                F: 'Ϝ',
-                G: 'Ԍ',
-                H: 'Н',
-                I: 'І',
-                J: 'Ј',
-                K: 'К',
-                L: 'ᒪ',
-                M: 'М',
-                N: 'Ν',
-                O: 'О',
-                P: 'Р',
-                Q: 'Ԛ',
-                R: 'ꓣ',
-                S: 'Ѕ',
-                T: 'Т',
-                U: 'Ս',
-                V: 'Ꮩ',
-                W: 'Ԝ',
-                X: 'Х',
-                Y: 'Υ',
-                Z: 'Ζ',
-                a: 'а',
-                b: 'ᖯ',
-                c: 'с',
-                d: 'ԁ',
-                e: 'е',
-                f: '𝖿',
-                g: 'ց',
-                h: 'һ',
-                i: 'і',
-                j: 'ј',
-                k: '𝗄',
-                l: 'ӏ',
-                m: 'ⅿ',
-                n: 'ո',
-                o: 'о',
-                p: 'р',
-                q: 'ԛ',
-                r: 'г',
-                s: 'ѕ',
-                t: '𝗍',
-                u: 'ս',
-                v: 'ᴠ',
-                w: 'ԝ',
-                x: 'х',
-                y: 'у',
-                z: 'ᴢ'
+                A: "А",
+                B: "В",
+                C: "С",
+                D: "Ⅾ",
+                E: "Е",
+                F: "Ϝ",
+                G: "Ԍ",
+                H: "Н",
+                I: "І",
+                J: "Ј",
+                K: "К",
+                L: "ᒪ",
+                M: "М",
+                N: "Ν",
+                O: "О",
+                P: "Р",
+                Q: "Ԛ",
+                R: "ꓣ",
+                S: "Ѕ",
+                T: "Т",
+                U: "Ս",
+                V: "Ꮩ",
+                W: "Ԝ",
+                X: "Х",
+                Y: "Υ",
+                Z: "Ζ",
+                a: "а",
+                b: "ᖯ",
+                c: "с",
+                d: "ԁ",
+                e: "е",
+                f: "𝖿",
+                g: "ց",
+                h: "һ",
+                i: "і",
+                j: "ј",
+                k: "𝗄",
+                l: "ӏ",
+                m: "ⅿ",
+                n: "ո",
+                o: "о",
+                p: "р",
+                q: "ԛ",
+                r: "г",
+                s: "ѕ",
+                t: "𝗍",
+                u: "ս",
+                v: "ᴠ",
+                w: "ԝ",
+                x: "х",
+                y: "у",
+                z: "ᴢ",
             };
 
-            const $ = id => document.getElementById(id);
-            const input = $('input'),
-                output = $('output');
-            let lang = 'pt';
+            const $ = (id) => document.getElementById(id);
+            const input = $("input"),
+                output = $("output");
+            let lang = "pt";
 
             /* ---------- i18n ---------- */
-            const t = key => translations[lang][key] ?? translations.en[key] ??
-                key;
+            const t = (key) => translations[lang][key] ?? translations.en[key] ?? key;
 
             function applyLang() {
                 document.documentElement.lang = lang;
-                document.querySelectorAll('[data-i18n]').forEach(el => el
-                    .textContent = t(el.dataset.i18n));
-                document.querySelectorAll('[data-i18n-placeholder]').forEach(
-                    el => el.placeholder = t(el.dataset.i18nPlaceholder));
-                $('copyText').textContent = t('copy');
+                document.querySelectorAll("[data-i18n]").forEach((el) => (el.textContent = t(el.dataset.i18n)));
+                document
+                    .querySelectorAll("[data-i18n-placeholder]")
+                    .forEach((el) => (el.placeholder = t(el.dataset.i18nPlaceholder)));
+                $("copyText").textContent = t("copy");
             }
 
-            Object.entries(translations).forEach(([code, tr]) => $('lang').add(
-                new Option(tr.name, code)));
-            const browserLang = (navigator.language || 'pt').slice(0, 2);
-            lang = translations[browserLang] ? browserLang : 'pt';
-            $('lang').value = lang;
-            $('lang').addEventListener('change', e => {
+            Object.entries(translations).forEach(([code, tr]) => $("lang").add(new Option(tr.name, code)));
+            const browserLang = (navigator.language || "pt").slice(0, 2);
+            lang = translations[browserLang] ? browserLang : "pt";
+            $("lang").value = lang;
+            $("lang").addEventListener("change", (e) => {
                 lang = e.target.value;
                 applyLang();
             });
 
             /* ---------- Checkboxes (btn-check do Bootstrap) ---------- */
             function buildLetters(container, letters) {
-                container.innerHTML = [...letters].map(ch => `
+                container.innerHTML = [...letters]
+                    .map(
+                        (ch) => `
       <div class="col-3 col-sm-2 col-lg-1">
         <input type="checkbox" class="btn-check letter" id="chk-${ch}" value="${ch}" checked autocomplete="off">
         <label class="btn btn-success btn-lg w-100 px-1 fw-semibold text-nowrap" for="chk-${ch}"><i class="bi bi-check-lg me-1"></i>${ch}</label>
-      </div>`).join('');
+      </div>`
+                    )
+                    .join("");
             }
 
             /* Atualiza cor + ícone: ✓ verde = substitui, ✗ cinza = mantém */
             function paintLetter(c) {
                 const label = c.nextElementSibling;
                 label.className =
-                    'btn btn-lg w-100 px-1 fw-semibold text-nowrap ' + (c
-                        .checked ? 'btn-success' : 'btn-outline-secondary');
-                label.firstElementChild.className = 'bi me-1 ' + (c.checked ?
-                    'bi-check-lg' : 'bi-x-lg');
+                    "btn btn-lg w-100 px-1 fw-semibold text-nowrap " +
+                    (c.checked ? "btn-success" : "btn-outline-secondary");
+                label.firstElementChild.className = "bi me-1 " + (c.checked ? "bi-check-lg" : "bi-x-lg");
             }
-            buildLetters($('upper'), 'ABCDEFGHIJKLMNOPQRSTUVWXYZ');
-            buildLetters($('lower'), 'abcdefghijklmnopqrstuvwxyz');
+            buildLetters($("upper"), "ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+            buildLetters($("lower"), "abcdefghijklmnopqrstuvwxyz");
 
-            const checks = () => document.querySelectorAll('.letter');
+            const checks = () => document.querySelectorAll(".letter");
 
             /* ---------- Persistência (guarda apenas as letras desmarcadas) ---------- */
-            const STORAGE_KEY = 'homoglyphs:disabled-letters';
-
+            const STORAGE_KEY = "homoglyphs:disabled-letters";
             function saveSelection() {
                 try {
-                    const disabled = [...checks()].filter(c => !c.checked).map(
-                        c => c.value);
+                    const disabled = [...checks()].filter((c) => !c.checked).map((c) => c.value);
                     localStorage.setItem(STORAGE_KEY, JSON.stringify(disabled));
                 } catch {
-                    /* storage indisponível: segue sem salvar */ }
+                    /* storage indisponível: segue sem salvar */
+                }
             }
-
             function loadSelection() {
                 try {
-                    const disabled = JSON.parse(localStorage.getItem(
-                        STORAGE_KEY));
+                    const disabled = JSON.parse(localStorage.getItem(STORAGE_KEY));
                     if (!Array.isArray(disabled)) return;
-                    checks().forEach(c => {
+                    checks().forEach((c) => {
                         c.checked = !disabled.includes(c.value);
                         paintLetter(c);
                     });
                 } catch {
-                    /* sem dados válidos: mantém tudo marcado */ }
+                    /* sem dados válidos: mantém tudo marcado */
+                }
             }
-            const setAll = state => {
-                checks().forEach(c => {
+            const setAll = (state) => {
+                checks().forEach((c) => {
                     c.checked = state;
                     paintLetter(c);
                 });
                 saveSelection();
                 convert();
             };
-            $('selAll').addEventListener('click', () => setAll(true));
-            $('selNone').addEventListener('click', () => setAll(false));
-            document.addEventListener('change', e => {
-                if (e.target.classList.contains('letter')) {
+            $("selAll").addEventListener("click", () => setAll(true));
+            $("selNone").addEventListener("click", () => setAll(false));
+            document.addEventListener("change", (e) => {
+                if (e.target.classList.contains("letter")) {
                     paintLetter(e.target);
                     saveSelection();
                     convert();
@@ -304,50 +296,83 @@
 
             /* ---------- Conversão em tempo real ---------- */
             function convert() {
-                const selected = new Set([...checks()].filter(c => c.checked)
-                    .map(c => c.value));
+                const selected = new Set([...checks()].filter((c) => c.checked).map((c) => c.value));
                 let count = 0;
-                output.value = Array.from(input.value).map(ch => {
-                    if (selected.has(ch) && homoglyphs[ch]) {
-                        count++;
-                        return homoglyphs[ch];
-                    }
-                    return ch;
-                }).join('');
-                $('count').textContent = count;
+                output.value = Array.from(input.value)
+                    .map((ch) => {
+                        if (selected.has(ch) && homoglyphs[ch]) {
+                            count++;
+                            return homoglyphs[ch];
+                        }
+                        return ch;
+                    })
+                    .join("");
+                $("count").textContent = count;
             }
-            input.addEventListener('input', convert);
+            input.addEventListener("input", convert);
 
             /* ---------- Copiar ---------- */
             async function copyText(text) {
-                if (navigator.clipboard && window.isSecureContext)
-                return navigator.clipboard.writeText(text);
+                if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
                 output.select();
                 output.setSelectionRange(0, text.length);
-                if (!document.execCommand('copy')) throw new Error(
-                    'copy failed');
+                if (!document.execCommand("copy")) throw new Error("copy failed");
             }
 
-            $('copy').addEventListener('click', async () => {
-                const btn = $('copy'),
-                    icon = $('copyIcon');
+            $("copy").addEventListener("click", async () => {
+                const btn = $("copy"),
+                    icon = $("copyIcon");
                 let ok = true;
                 try {
                     await copyText(output.value);
                 } catch {
                     ok = false;
                 }
-                $('copyText').textContent = t(ok ? 'copied' :
-                    'copyError');
-                icon.className = 'bi me-2 ' + (ok ?
-                    'bi-clipboard-check' :
-                    'bi-exclamation-triangle');
+                $("copyText").textContent = t(ok ? "copied" : "copyError");
+                icon.className = "bi me-2 " + (ok ? "bi-clipboard-check" : "bi-exclamation-triangle");
                 btn.disabled = true;
                 setTimeout(() => {
-                    $('copyText').textContent = t('copy');
-                    icon.className = 'bi bi-clipboard me-2';
+                    $("copyText").textContent = t("copy");
+                    icon.className = "bi bi-clipboard me-2";
                     btn.disabled = false;
                 }, 1800);
+            });
+
+            /* ---------- Fonte do resultado (web safe fonts) ---------- */
+            const webSafeFonts = [
+                ["Arial", "Arial, Helvetica, sans-serif"],
+                ["Arial Black", '"Arial Black", Gadget, sans-serif'],
+                ["Verdana", "Verdana, Geneva, sans-serif"],
+                ["Tahoma", "Tahoma, Geneva, sans-serif"],
+                ["Trebuchet MS", '"Trebuchet MS", Helvetica, sans-serif'],
+                ["Helvetica", "Helvetica, Arial, sans-serif"],
+                ["Impact", "Impact, Charcoal, sans-serif"],
+                ["Segoe UI", '"Segoe UI", Tahoma, sans-serif'],
+                ["Calibri", "Calibri, Candara, sans-serif"],
+                ["Times New Roman", '"Times New Roman", Times, serif'],
+                ["Georgia", "Georgia, serif"],
+                ["Garamond", "Garamond, serif"],
+                ["Palatino", '"Palatino Linotype", "Book Antiqua", Palatino, serif'],
+                ["Bookman", '"Bookman Old Style", Bookman, serif'],
+                ["Cambria", "Cambria, Georgia, serif"],
+                ["Courier New", '"Courier New", Courier, monospace'],
+                ["Lucida Console", '"Lucida Console", Monaco, monospace'],
+                ["Lucida Sans Unicode", '"Lucida Sans Unicode", "Lucida Grande", sans-serif'],
+                ["Comic Sans MS", '"Comic Sans MS", "Comic Sans", cursive'],
+                ["Brush Script MT", '"Brush Script MT", cursive'],
+                ["serif", "serif"],
+                ["sans-serif", "sans-serif"],
+                ["monospace", "monospace"],
+                ["cursive", "cursive"],
+                ["fantasy", "fantasy"],
+            ];
+            const fontSelect = $("fontSelect");
+            const defaultOpt = new Option("", "");
+            defaultOpt.dataset.i18n = "fontDefault";
+            fontSelect.add(defaultOpt);
+            webSafeFonts.forEach(([name, stack]) => fontSelect.add(new Option(name, stack)));
+            fontSelect.addEventListener("change", () => {
+                output.style.fontFamily = fontSelect.value;
             });
 
             loadSelection();
@@ -355,5 +380,4 @@
             convert();
         </script>
     </body>
-
 </html>

@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Black Hole Visualizer</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/css/bootstrap.min.css">
+</head>
+<body class="bg-black overflow-hidden user-select-none">
+<canvas id="c" class="position-fixed top-0 start-0 w-100 h-100"></canvas>
+
+<div class="position-fixed top-0 start-0 end-0 p-2 d-flex flex-wrap gap-2 justify-content-between align-items-center">
+  <div class="btn-group" role="group" aria-label="Drag mode">
+    <input type="radio" class="btn-check" name="mode" id="mRot" value="orbit" checked>
+    <label class="btn btn-outline-light" for="mRot">Rotate</label>
+    <input type="radio" class="btn-check" name="mode" id="mMove" value="move">
+    <label class="btn btn-outline-light" for="mMove">Move</label>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-outline-light" id="center">Center</button>
+    <button class="btn btn-primary" data-bs-toggle="offcanvas" data-bs-target="#panel">Controls</button>
+  </div>
+</div>
+<div class="position-fixed bottom-0 start-0 end-0 p-2 text-center text-white-50 small pe-none">
+  1 finger: rotate or move (see mode) &middot; 2 fingers: pinch to zoom, drag to move the black hole
+</div>
+
+<div class="offcanvas offcanvas-bottom h-50" tabindex="-1" id="panel" data-bs-scroll="true" data-bs-backdrop="false">
+  <div class="offcanvas-header py-2">
+    <h5 class="offcanvas-title">Schwarzschild black hole</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body pt-0">
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <div class="form-check form-switch fs-5"><input class="form-check-input" type="checkbox" id="grav" checked><label class="form-check-label" for="grav">Gravity (lensing)</label></div>
+        <div class="form-check form-switch fs-5"><input class="form-check-input" type="checkbox" id="disk" checked><label class="form-check-label" for="disk">Accretion disk</label></div>
+        <div class="form-check form-switch fs-5"><input class="form-check-input" type="checkbox" id="spin" checked><label class="form-check-label" for="spin">Animate disk</label></div>
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label mb-0" for="bright">Disk brightness</label>
+        <input type="range" class="form-range" id="bright" min="0.2" max="3" step="0.1" value="1.2">
+        <label class="form-label mb-0" for="temp">Disk temperature (K)</label>
+        <input type="range" class="form-range" id="temp" min="3000" max="12000" step="250" value="6000">
+      </div>
+      <div class="col-12 col-md-4">
+        <label class="form-label mb-0" for="steps">Quality (ray steps)</label>
+        <input type="range" class="form-range" id="steps" min="100" max="500" step="20" value="360">
+        <label class="form-label mb-0" for="res">Resolution scale</label>
+        <input type="range" class="form-range" id="res" min="0.3" max="1" step="0.05" value="0.75">
+      </div>
+      <div class="col-12 col-md-6">
+        <label class="form-label mb-0" for="file">Custom skybox (equirectangular image)</label>
+        <input type="file" class="form-control" id="file" accept="image/*">
+      </div>
+      <div class="col-12 col-md-6">
+        <details><summary class="fs-6">Formulas used</summary>
+        <p class="small text-body-secondary mb-0">
+        r<sub>s</sub> = 2GM/c&sup2; (unit = 1) &middot; Null geodesic: d&sup2;u/d&phi;&sup2; + u = (3/2) r<sub>s</sub> u&sup2;, u = 1/r &middot;
+        Ray acceleration (Cartesian): a = &minus;(3/2) r<sub>s</sub> h&sup2; r&#770; / r&#8308;, h = |r &times; v| conserved &middot;
+        Shadow: b<sub>c</sub> = (3&radic;3/2) r<sub>s</sub> &approx; 2.6 r<sub>s</sub> &middot; Photon sphere: 1.5 r<sub>s</sub> &middot; ISCO: 3 r<sub>s</sub> &middot;
+        Disk: v = &radic;(0.5/(r&minus;1)), &Omega; = &radic;(0.5/r&sup3;) &middot;
+        Doppler: D = 1/[&gamma;(1 &minus; v&middot;n)] &middot; Gravitational redshift: &radic;(1 &minus; r<sub>s</sub>/r) &middot;
+        g = D&middot;&radic;(1 &minus; r<sub>s</sub>/r), intensity &prop; g&#8308;, T<sub>obs</sub> = g&middot;T &middot;
+        Novikov&ndash;Thorne: T&#8308; &prop; (1 &minus; &radic;(r<sub>isco</sub>/r))/r&sup3; &middot;
+        Observer at finite r: g &divide; &radic;(1 &minus; r<sub>s</sub>/r<sub>cam</sub>)</p></details>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.3/js/bootstrap.bundle.min.js"></script>
+<script>
+const VS = `attribute vec2 p; void main(){ gl_Position = vec4(p,0.,1.); }`;
+const FS = `
+#extension GL_OES_standard_derivatives : enable
+precision highp float;
+uniform vec2 res; uniform float time;
+uniform vec3 camPos, camR, camU, camF;
+uniform float fovT, gravity, diskOn, bright, useSky, tmax;
+uniform int maxSteps;
+uniform sampler2D sky;
+
+float hash(vec3 p){ p=fract(p*0.3183099+.1); p*=17.0; return fract(p.x*p.y*p.z*(p.x+p.y+p.z)); }
+vec3 hash3(vec3 p){ return vec3(hash(p),hash(p+17.3),hash(p+41.7)); }
+float vnoise(vec3 p){
+  vec3 i=floor(p), f=fract(p); f=f*f*(3.-2.*f);
+  return mix(mix(mix(hash(i),hash(i+vec3(1,0,0)),f.x),mix(hash(i+vec3(0,1,0)),hash(i+vec3(1,1,0)),f.x),f.y),
+             mix(mix(hash(i+vec3(0,0,1)),hash(i+vec3(1,0,1)),f.x),mix(hash(i+vec3(0,1,1)),hash(i+vec3(1,1,1)),f.x),f.y),f.z);
+}
+float fbm(vec3 p){ float a=.5,s=0.; for(int i=0;i<4;i++){ s+=a*vnoise(p); p*=2.03; a*=.5; } return s; }
+
+vec3 starLayer(vec3 d,float s,float seed,float fw){
+  vec3 p=d*s, c=floor(p), f=fract(p);
+  if(hash(c+seed)<0.82) return vec3(0);
+  vec3 r=hash3(c+seed+7.1);
+  float dd=length(f-(0.25+0.5*r));
+  float sz=0.13+fw*s*0.6; // star size grows with local distortion (lens anti-aliasing)
+  float b=smoothstep(sz,0.0,dd)*pow(0.13/sz,2.)*(0.3+3.0*pow(hash(c+seed+3.3),6.));
+  return mix(vec3(1.,.65,.4),vec3(.6,.75,1.),r.z)*b;
+}
+vec3 skyColor(vec3 d,float fw){
+  if(useSky>.5){
+    vec2 uv=vec2(atan(d.z,d.x)/6.2831853+.5, asin(clamp(d.y,-1.,1.))/3.1415927+.5);
+    return texture2D(sky,uv).rgb;
+  }
+  vec3 c=starLayer(d,45.,0.,fw)+starLayer(d,90.,5.,fw)*.8+starLayer(d,180.,9.,fw)*.6;
+  float band=exp(-pow(dot(d,normalize(vec3(.2,.9,.4)))*3.2,2.));
+  float n=fbm(d*3.+1.7);
+  c+=band*(0.04+0.35*n*n)*mix(vec3(.9,.6,.4),vec3(.4,.5,.9),fbm(d*2.+9.));
+  c+=band*starLayer(d,260.,13.,fw)*.7;
+  return c;
+}
+vec3 bb(float T){
+  float t=T/100.;
+  float r=t<=66.?1.:clamp(1.292936*pow(t-60.,-0.1332047),0.,1.);
+  float g=t<=66.?clamp(0.390081*log(t)-0.631841,0.,1.):clamp(1.129891*pow(t-60.,-0.0755148),0.,1.);
+  float b=t>=66.?1.:(t<=19.?0.:clamp(0.543207*log(t-10.)-1.196254,0.,1.));
+  return vec3(r,g,b);
+}
+void main(){
+  vec2 uv=(gl_FragCoord.xy*2.-res)/res.y;
+  vec3 vel=normalize(camF+(uv.x*camR+uv.y*camU)*fovT);
+  vec3 pos=camPos;
+  vec3 hv=cross(pos,vel); float h2=dot(hv,hv);
+  vec3 col=vec3(0.); float T=1.;
+  vec3 sd=vec3(0.,0.,1.); bool esc=false; float rcam=length(camPos);
+  for(int i=0;i<500;i++){
+    if(i>=maxSteps) break;
+    float r2=dot(pos,pos), r=sqrt(r2);
+    if(r<1.0){ T=0.; break; }                       // event horizon
+    if(r>120. && dot(pos,vel)>0.){ esc=true; sd=normalize(vel); break; }
+    float dt=clamp(0.05*(r-0.9),0.01,2.0);
+    if(r<14.) dt=min(dt,0.25*abs(pos.y)+0.03); // fine step near the disk plane
+    vec3 old=pos;
+    vel+=-1.5*h2*pos/(r2*r2*r)*dt*gravity;           // Schwarzschild null geodesic
+    pos+=vel*dt;
+    if(diskOn>.5 && old.y*pos.y<0.){
+      vec3 hp=mix(old,pos,old.y/(old.y-pos.y));
+      float rr=length(hp.xz);
+      if(rr>3.0 && rr<12.){
+        float v=sqrt(0.5/(rr-1.0));
+        vec3 vd=normalize(vec3(-hp.z,0.,hp.x))*v;
+        vec3 n=-normalize(vel);
+        float D=1./(inversesqrt(1.-v*v)*(1.-dot(vd,n)));
+        float g=D*sqrt((1.-1./rr)/(1.-1./rcam)); // observer at finite r
+        float nt=pow((1.-sqrt(3./rr))/(rr*rr*rr),0.25); // Novikov-Thorne: flux -> 0 at the ISCO
+        float Tloc=tmax*nt/0.214;
+        float phi=atan(hp.z,hp.x)-time*2.1*pow(rr,-1.5);
+        float dens=fbm(vec3(cos(phi),sin(phi),0.)*rr*.9+vec3(0.,0.,rr*.35))*1.6;
+        dens*=0.5+0.5*vnoise(vec3(rr*5.,3.,7.));
+        float edge=smoothstep(3.0,3.4,rr)*(1.-smoothstep(8.,12.,rr));
+        float a=clamp(dens*edge*1.3,0.,1.);
+        vec3 em=bb(Tloc*g)*pow(Tloc/tmax,4.)*pow(g,4.)*bright*3.*(0.4+0.6*abs(n.y));
+        col+=T*em*a; T*=(1.-a*.92);
+      }
+    }
+  }
+  float fw=length(dFdx(sd))+length(dFdy(sd));
+  if(esc) col+=T*skyColor(sd,min(fw,0.05));
+  col=1.-exp(-col*1.3);
+  gl_FragColor=vec4(pow(col,vec3(1./2.2)),1.);
+}`;
+
+
+const cv=document.getElementById('c'), gl=cv.getContext('webgl'); gl.getExtension('OES_standard_derivatives');
+function sh(t,s){ const o=gl.createShader(t); gl.shaderSource(o,s); gl.compileShader(o);
+  if(!gl.getShaderParameter(o,gl.COMPILE_STATUS)) throw gl.getShaderInfoLog(o); return o; }
+const pr=gl.createProgram();
+gl.attachShader(pr,sh(gl.VERTEX_SHADER,VS)); gl.attachShader(pr,sh(gl.FRAGMENT_SHADER,FS));
+gl.linkProgram(pr); gl.useProgram(pr);
+const buf=gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,3,-1,-1,3]),gl.STATIC_DRAW);
+const al=gl.getAttribLocation(pr,'p'); gl.enableVertexAttribArray(al); gl.vertexAttribPointer(al,2,gl.FLOAT,false,0,0);
+const U=n=>gl.getUniformLocation(pr,n), $=id=>document.getElementById(id);
+
+const tex=gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D,tex);
+gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,1,1,0,gl.RGBA,gl.UNSIGNED_BYTE,new Uint8Array([0,0,0,255]));
+[gl.TEXTURE_MIN_FILTER,gl.TEXTURE_MAG_FILTER].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.LINEAR));
+[gl.TEXTURE_WRAP_S,gl.TEXTURE_WRAP_T].forEach(k=>gl.texParameteri(gl.TEXTURE_2D,k,gl.CLAMP_TO_EDGE));
+let useSky=0;
+$('file').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{ const im=new Image(); im.onload=()=>{
+    const c=document.createElement('canvas'); c.width=2048; c.height=1024;
+    c.getContext('2d').drawImage(im,0,0,2048,1024);
+    gl.bindTexture(gl.TEXTURE_2D,tex); gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL,true);
+    gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,gl.RGBA,gl.UNSIGNED_BYTE,c); useSky=1; };
+    im.src=rd.result; };
+  rd.readAsDataURL(f);
+};
+
+$('res').value=window.innerWidth<768?0.6:0.85;
+function resize(){
+  const s=parseFloat($('res').value);
+  cv.width=Math.max(160,Math.round((cv.clientWidth||window.innerWidth)*s));
+  cv.height=Math.max(160,Math.round((cv.clientHeight||window.innerHeight)*s));
+  gl.viewport(0,0,cv.width,cv.height);
+}
+new ResizeObserver(resize).observe(cv); window.addEventListener('resize',resize); $('res').oninput=resize; resize();
+
+let az=0.6, el=0.1, dist=30, ox=0, oy=0;
+$('center').onclick=()=>{ox=0;oy=0;};
+const clampD=d=>Math.max(3,Math.min(60,d));
+function panBH(dx,dy){ // drag the black hole across the screen; the sky stays fixed
+  const s=2*Math.tan(0.5*60*Math.PI/180)*dist/(cv.clientHeight||window.innerHeight);
+  ox=Math.max(-dist,Math.min(dist,ox+dx*s)); oy=Math.max(-dist,Math.min(dist,oy-dy*s));
+}
+cv.addEventListener('contextmenu',e=>e.preventDefault());
+cv.addEventListener('touchmove',e=>e.preventDefault(),{passive:false});
+const ptrs=new Map(); let pd=0, pm=null;
+const two=()=>{const [a,b]=[...ptrs.values()]; return {d:Math.hypot(a.x-b.x,a.y-b.y),m:{x:(a.x+b.x)/2,y:(a.y+b.y)/2}};};
+cv.addEventListener('pointerdown',e=>{
+  cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(ptrs.size===2){ const t=two(); pd=t.d; pm=t.m; }
+});
+const end=e=>{ ptrs.delete(e.pointerId); pd=0; pm=null; };
+cv.addEventListener('pointerup',end); cv.addEventListener('pointercancel',end);
+cv.addEventListener('pointermove',e=>{
+  const p=ptrs.get(e.pointerId); if(!p) return;
+  const dx=e.clientX-p.x, dy=e.clientY-p.y; p.x=e.clientX; p.y=e.clientY;
+  if(ptrs.size>=2){ // pinch = zoom, two-finger drag = move the black hole
+    const t=two(); if(pd>0&&t.d>0) dist=clampD(dist*pd/t.d); pd=t.d;
+    if(pm) panBH(t.m.x-pm.x,t.m.y-pm.y); pm=t.m; return;
+  }
+  const move=e.shiftKey||(e.buttons&2)||document.querySelector('input[name=mode]:checked').value==='move';
+  if(move) panBH(dx,dy);
+  else { az-=dx*0.006; el=Math.max(-1.5,Math.min(1.5,el+dy*0.006)); }
+});
+cv.addEventListener('wheel',e=>{ e.preventDefault(); dist=clampD(dist*Math.exp(e.deltaY*0.001)); },{passive:false});
+
+let t=0,last=performance.now();
+function frame(now){
+  const dt=(now-last)/1000; last=now; if($('spin').checked) t+=dt;
+  const ce=Math.cos(el);
+  const f=[-ce*Math.sin(az),-Math.sin(el),-ce*Math.cos(az)];
+  let r=[-f[2],0,f[0]]; const rl=Math.hypot(r[0],r[2]); r=[r[0]/rl,0,r[2]/rl];
+  const u=[r[1]*f[2]-r[2]*f[1],r[2]*f[0]-r[0]*f[2],r[0]*f[1]-r[1]*f[0]];
+  gl.uniform2f(U('res'),cv.width,cv.height); gl.uniform1f(U('time'),t);
+  gl.uniform3fv(U('camPos'),[0,1,2].map(i=>-(f[i]*dist+r[i]*ox+u[i]*oy)));
+  gl.uniform3fv(U('camF'),f); gl.uniform3fv(U('camR'),r); gl.uniform3fv(U('camU'),u);
+  gl.uniform1f(U('fovT'),Math.tan(0.5*60*Math.PI/180));
+  gl.uniform1f(U('gravity'),$('grav').checked?1:0);
+  gl.uniform1f(U('diskOn'),$('disk').checked?1:0);
+  gl.uniform1f(U('bright'),parseFloat($('bright').value));
+  gl.uniform1f(U('tmax'),parseFloat($('temp').value));
+  gl.uniform1i(U('maxSteps'),parseInt($('steps').value));
+  gl.uniform1f(U('useSky'),useSky); gl.uniform1i(U('sky'),0);
+  gl.drawArrays(gl.TRIANGLES,0,3);
+  requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
